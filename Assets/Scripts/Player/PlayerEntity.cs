@@ -1,4 +1,6 @@
 using UnityEngine;
+using Tools;
+using Enums;
 
 namespace Player
 {
@@ -7,7 +9,7 @@ namespace Player
     {
         [Header("HorizontalMovement")]
         [SerializeField] private float _horizontalSpeed;
-        [SerializeField] private bool _faceRight;
+        [SerializeField] private Direction _direction;
         [Header("VerticalMovement")]
         [SerializeField] private float _verticalSpeed;
 
@@ -19,28 +21,23 @@ namespace Player
         [Header("Jump")]
         [SerializeField] private float _jumpForce;
         [SerializeField] private float _gravityScale;
-        //[SerializeField] private SpriteRenderer _shadow;
-        //[SerializeField][Range(0, 1)] private float _shadowSizeModificator;
-        //[SerializeField][Range(0, 1)] private float _shadowAlphaModificator;
-        
+        [SerializeField] private DirectionalCamerPair _cameras;
         private Rigidbody2D _rigidbody;
 
         private float _sizeModificator;
         private bool _isJumping;
         private float _startJumpVerticalPoint;
-        //private Vector2 _shadowLocalPosition;
-        //private float _shadowVerticalPosition;
 
         private void Start()
         {
             _rigidbody = GetComponent<Rigidbody2D>();
 
-            //_shadowLocalPosition = _shadow.transform.localPosition;
-
             float positionDifference = _maxVerticalPosition - _minVerticalPosition;
             float sizeDifference = _maxSize - _minSize;
             _sizeModificator = sizeDifference / positionDifference;
-            UpdateSize();
+            //UpdateSize();
+            _rigidbody.position = new Vector2(_rigidbody.position.x, _maxVerticalPosition);
+            transform.localScale = Vector2.one * _minSize;
         }
 
         private void Update()
@@ -79,11 +76,9 @@ namespace Player
                 return;
 
             _isJumping = true;
-            //float jumpModificator = transform.localScale.y / _maxSize;
-            _rigidbody.AddForce(Vector2.up * _jumpForce /** jumpModificator*/);
-            _rigidbody.gravityScale = _gravityScale /** jumpModificator*/;
+            _rigidbody.AddForce(Vector2.up * _jumpForce);
+            _rigidbody.gravityScale = _gravityScale;
             _startJumpVerticalPoint = transform.position.y;
-            //_shadowVerticalPosition = _shadow.transform.position.y;
         }
 
         private void UpdateSize()
@@ -95,15 +90,18 @@ namespace Player
 
         private void SetDirection(float direction)
         {
-            if ((_faceRight && direction < 0) ||
-                (!_faceRight && direction > 0))
+            if ((_direction == Direction.Right && direction < 0) ||
+                (_direction  == Direction.Left && direction > 0))
                 Flip();
         }
 
         private void Flip()
         {
             transform.Rotate(0, 180, 0);
-            _faceRight = !_faceRight;
+            _direction = _direction == Direction.Right ? Direction.Left : Direction.Right;
+
+            foreach (var cameraPair in _cameras.DirectionalCameras)
+                cameraPair.Value.enabled = cameraPair.Key == _direction;
         }
 
         private void UpdateJump()
@@ -113,18 +111,11 @@ namespace Player
                 ResetJump();
                 return;
             }
-
-            //_shadow.transform.position = new Vector2(_shadow.transform.position.x, _shadowVerticalPosition);
-            //float distance = transform.position.y - _startJumpVerticalPoint;
-            //_shadow.color = new Color(1, 1, 1, 1 - distance * _shadowAlphaModificator);
-            //_shadow.transform.localScale = Vector2.one * (1 + _shadowSizeModificator * distance);
         }
 
         private void ResetJump()
         {
-            _isJumping = false;
-            //_shadow.transform.localPosition = _shadowLocalPosition;
-            //_shadow.color = Color.white;
+            _isJumping = false; 
             _rigidbody.position = new Vector2(_rigidbody.position.x, _startJumpVerticalPoint);
             _rigidbody.gravityScale = 0;
         }
