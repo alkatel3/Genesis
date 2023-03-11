@@ -3,13 +3,14 @@ using Tools;
 using Enums;
 using Assets.Scripts.Player;
 using System;
+using Assets.Scripts.Player.PlayerAnimation;
 
 namespace Player
 {
     [RequireComponent(typeof(Rigidbody2D))]
     public class PlayerEntity : MonoBehaviour
     {
-        [SerializeField] private Animator _animator;
+        [SerializeField] private AnimationController _animator;
 
         [Header("HorizontalMovement")]
         [SerializeField] private float _horizontalSpeed;
@@ -19,6 +20,9 @@ namespace Player
 
         [SerializeField] private float _minSize;
         [SerializeField] private float _maxSize;
+
+
+
         [SerializeField] private float _minVerticalPosition;
         [SerializeField] private float _maxVerticalPosition;
 
@@ -33,7 +37,6 @@ namespace Player
         private float _startJumpVerticalPoint;
 
         private Vector2 _movement;
-        private AnimationType _currentAnimationType;
 
         private void Start()
         {
@@ -57,9 +60,9 @@ namespace Player
 
         private void UpdateAnimations()
         {
-            PlayAnimation(AnimationType.Idle, true);
-            PlayAnimation(AnimationType.Walk, _movement.magnitude > 0 );
-            PlayAnimation(AnimationType.Jump, _isJumping);
+            _animator.PlayAnimation(AnimationType.Idle, true);
+            _animator.PlayAnimation(AnimationType.Walk, _movement.magnitude > 0 );
+            _animator.PlayAnimation(AnimationType.Jump, _isJumping);
         }
 
         public void MoveHorizontally(float direction)
@@ -136,34 +139,27 @@ namespace Player
             _isJumping = false; 
             _rigidbody.position = new Vector2(_rigidbody.position.x, _startJumpVerticalPoint);
             _rigidbody.gravityScale = 0;
-        }
-
-        private void PlayAnimation(AnimationType animationType, bool active)
-        {
-            if (!active)
-            {
-                if (_currentAnimationType == AnimationType.Idle || _currentAnimationType != animationType)
-                    return;
-
-                _currentAnimationType = AnimationType.Idle;
-                PlayAnimation(_currentAnimationType);
-                return;
-            }
-
-            if(_currentAnimationType >= animationType)
-            {
-                return;
-            }
-
-            _currentAnimationType = animationType;
-            PlayAnimation(_currentAnimationType);
-
-            
-        }
+        }      
         
-        private void PlayAnimation(AnimationType animationType)
+        public void StartAtack()
         {
-            _animator.SetInteger(nameof(AnimationType), (int)animationType);
+            if (!_animator.PlayAnimation(AnimationType.Atack, true))
+                return;
+
+            _animator.ActionRequested += Atack;
+            _animator.AnimationEnded += EndAttack;
+        }
+
+        private void Atack()
+        {
+            Debug.Log("Atack");
+        }
+
+        private void EndAttack()
+        {
+            _animator.ActionRequested -= Atack;
+            _animator.AnimationEnded -= EndAttack;
+            _animator.PlayAnimation(AnimationType.Atack, false);
         }
     }
 }

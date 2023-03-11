@@ -19,6 +19,9 @@ namespace Assets.Scripts
             {
                 _playerEntity.Jump();
             }
+
+            if (Input.GetButtonDown("Fire1"))
+                _playerEntity.StartAtack();
         }
 
         private void FixedUpdate()
