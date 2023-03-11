@@ -980,9 +980,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 722cb14d6de3da84b8c9e943ba313286, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _horizontalSpeed: 8
+  _horizontalSpeed: 6
   _direction: 0
-  _verticalSpeed: 4
+  _verticalSpeed: 3
   _minSize: 1.5
   _maxSize: 2
   _minVerticalPosition: -4.3
