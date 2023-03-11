@@ -1,12 +1,16 @@
 using UnityEngine;
 using Tools;
 using Enums;
+using Assets.Scripts.Player;
+using System;
 
 namespace Player
 {
     [RequireComponent(typeof(Rigidbody2D))]
     public class PlayerEntity : MonoBehaviour
     {
+        [SerializeField] private Animator _animator;
+
         [Header("HorizontalMovement")]
         [SerializeField] private float _horizontalSpeed;
         [SerializeField] private Direction _direction;
@@ -28,6 +32,9 @@ namespace Player
         private bool _isJumping;
         private float _startJumpVerticalPoint;
 
+        private Vector2 _movement;
+        private AnimationType _currentAnimationType;
+
         private void Start()
         {
             _rigidbody = GetComponent<Rigidbody2D>();
@@ -44,10 +51,20 @@ namespace Player
         {
             if (_isJumping)
                 UpdateJump();
+
+            UpdateAnimations();
+        }
+
+        private void UpdateAnimations()
+        {
+            PlayAnimation(AnimationType.Idle, true);
+            PlayAnimation(AnimationType.Walk, _movement.magnitude > 0 );
+            PlayAnimation(AnimationType.Jump, _isJumping);
         }
 
         public void MoveHorizontally(float direction)
         {
+            _movement.x = direction;
             SetDirection(direction);
             Vector2 velocity = _rigidbody.velocity;
             velocity.x = direction * _horizontalSpeed;
@@ -59,6 +76,7 @@ namespace Player
             if (_isJumping)
                 return;
 
+            _movement.y = direction;
             Vector2 velocity = _rigidbody.velocity;
             velocity.y = direction * _verticalSpeed;
             _rigidbody.velocity = velocity;
@@ -118,6 +136,34 @@ namespace Player
             _isJumping = false; 
             _rigidbody.position = new Vector2(_rigidbody.position.x, _startJumpVerticalPoint);
             _rigidbody.gravityScale = 0;
+        }
+
+        private void PlayAnimation(AnimationType animationType, bool active)
+        {
+            if (!active)
+            {
+                if (_currentAnimationType == AnimationType.Idle || _currentAnimationType != animationType)
+                    return;
+
+                _currentAnimationType = AnimationType.Idle;
+                PlayAnimation(_currentAnimationType);
+                return;
+            }
+
+            if(_currentAnimationType >= animationType)
+            {
+                return;
+            }
+
+            _currentAnimationType = animationType;
+            PlayAnimation(_currentAnimationType);
+
+            
+        }
+        
+        private void PlayAnimation(AnimationType animationType)
+        {
+            _animator.SetInteger(nameof(AnimationType), (int)animationType);
         }
     }
 }
