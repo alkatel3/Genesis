@@ -10,7 +10,7 @@ namespace Assets.Scripts.Player
     {
         Idle = 0,
         Walk = 1,
-        Preslide = 2,
+        Slide = 2,
         Jump = 3,
         Atack = 4,
     }

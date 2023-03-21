@@ -13,7 +13,8 @@ namespace Player
         [SerializeField] private AnimationController _animator;
 
         [Header("HorizontalMovement")]
-        [SerializeField] private float _horizontalSpeed;
+        [SerializeField] private float _walkSpeed;
+        [SerializeField] private float _runSpeed;
         [SerializeField] private Direction _direction;
         [Header("VerticalMovement")]
         [SerializeField] private float _verticalSpeed;
@@ -35,6 +36,7 @@ namespace Player
         private float _sizeModificator;
         private bool _isJumping;
         private float _startJumpVerticalPoint;
+        private float _currentSpeed;
 
         private Vector2 _movement;
 
@@ -62,15 +64,27 @@ namespace Player
         {
             _animator.PlayAnimation(AnimationType.Idle, true);
             _animator.PlayAnimation(AnimationType.Walk, _movement.magnitude > 0 );
+            _animator.PlayAnimation(AnimationType.Slide, _currentSpeed==_runSpeed);
             _animator.PlayAnimation(AnimationType.Jump, _isJumping);
         }
 
         public void MoveHorizontally(float direction)
         {
+            _currentSpeed = _walkSpeed;
             _movement.x = direction;
             SetDirection(direction);
             Vector2 velocity = _rigidbody.velocity;
-            velocity.x = direction * _horizontalSpeed;
+            velocity.x = direction * _currentSpeed;
+            _rigidbody.velocity = velocity;
+        }
+
+        public void Slide(float direction)
+        {
+            _currentSpeed = _runSpeed;
+            _movement.x = direction;
+            SetDirection(direction);
+            Vector2 velocity = _rigidbody.velocity;
+            velocity.x = direction * _currentSpeed;
             _rigidbody.velocity = velocity;
         }
 
@@ -161,5 +175,26 @@ namespace Player
             _animator.AnimationEnded -= EndAttack;
             _animator.PlayAnimation(AnimationType.Atack, false);
         }
+
+        //public void StartSlize()
+        //{
+        //    if (!_animator.PlayAnimation(AnimationType.Slide, true))
+        //        return;
+
+        //    _animator.ActionRequested += Slize;
+        //    _animator.AnimationEnded += EndSlize;
+        //}
+
+        //private void Slize()
+        //{
+        //    Debug.Log("Slide");
+        //}
+
+        //private void EndSlize()
+        //{
+        //    _animator.ActionRequested -= Slize;
+        //    _animator.AnimationEnded -= EndSlize;
+        //    _animator.PlayAnimation(AnimationType.Slide, false);
+        //}
     }
 }

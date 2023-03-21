@@ -32,7 +32,7 @@ namespace Assets.Scripts.Player.PlayerAnimation
                     return _walkAnimation;
                 case AnimationType.Idle:
                     return _idleAnimation;
-                case AnimationType.Preslide:
+                case AnimationType.Slide:
                     return _runAnimation;
                 case AnimationType.Jump:
                     return _jumpAnimation;
