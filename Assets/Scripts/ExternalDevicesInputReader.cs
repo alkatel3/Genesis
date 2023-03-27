@@ -1,8 +1,8 @@
-﻿using Assets.Scripts.Player;
+﻿using InputReader;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-namespace Assets.Scripts
+namespace Scripts
 {
     public class ExternalDevicesInputReader : MonoBehaviour, IEntityInputSource
     {

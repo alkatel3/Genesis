@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
-namespace Assets.Scripts.Player
+namespace InputReader
 {
     public class GameUIInputView : MonoBehaviour, IEntityInputSource
     {
@@ -28,7 +28,7 @@ namespace Assets.Scripts.Player
         {
             _jumpButton.onClick.AddListener(() => Jump = true);
             _attackButton.onClick.AddListener(() => Attack = true);
-            _slideButton.onClick.AddListener(() => Slide = true && HorizontalDirection !=0);
+            _slideButton.onClick.AddListener(() => Slide = true);
         }
 
         private void OnDestroy()

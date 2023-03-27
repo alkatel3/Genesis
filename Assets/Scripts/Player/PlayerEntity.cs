@@ -1,9 +1,11 @@
 using UnityEngine;
 using Tools;
 using Enums;
-using Assets.Scripts.Player;
+using Core;
 using System;
-using Assets.Scripts.Player.PlayerAnimation;
+using Animation;
+using Core.Movement.Data;
+using Core.Movement.Controller;
 
 namespace Player
 {
@@ -11,149 +13,68 @@ namespace Player
     public class PlayerEntity : MonoBehaviour
     {
         [SerializeField] private AnimationController _animator;
-
-        [Header("HorizontalMovement")]
-        [SerializeField] private float _walkSpeed;
-        [SerializeField] private float _runSpeed;
-        [SerializeField] private Direction _direction;
-        [Header("VerticalMovement")]
-        [SerializeField] private float _verticalSpeed;
-
-        [SerializeField] private float _minSize;
-        [SerializeField] private float _maxSize;
-
-
-
-        [SerializeField] private float _minVerticalPosition;
-        [SerializeField] private float _maxVerticalPosition;
-
-        [Header("Jump")]
-        [SerializeField] private float _jumpForce;
-        [SerializeField] private float _gravityScale;
+        [SerializeField] private DirectionalMovementData _directionalMovementData;
+        [SerializeField] private JumpData _jumpData;
         [SerializeField] private DirectionalCamerPair _cameras;
+
         private Rigidbody2D _rigidbody;
-
-        private float _sizeModificator;
-        private bool _isJumping;
-        private float _startJumpVerticalPoint;
-        private float _currentSpeed;
-
-        private Vector2 _movement;
+        private DirectionMover _directionMover;
+        private Jumper _jumper;
 
         private void Start()
         {
             _rigidbody = GetComponent<Rigidbody2D>();
+            _directionMover = new DirectionMover(_rigidbody, _directionalMovementData);
+            _jumper = new Jumper(_rigidbody, _jumpData, _directionalMovementData.MaxSize); 
 
-            float positionDifference = _maxVerticalPosition - _minVerticalPosition;
-            float sizeDifference = _maxSize - _minSize;
-            _sizeModificator = sizeDifference / positionDifference;
-            //UpdateSize();
-            _rigidbody.position = new Vector2(_rigidbody.position.x, _maxVerticalPosition);
-            transform.localScale = Vector2.one * _minSize;
+            _rigidbody.position = new Vector2(_rigidbody.position.x, _directionalMovementData.MaxVerticalPosition);
+            transform.localScale = Vector2.one * _directionalMovementData.MinSize;
         }
 
         private void Update()
         {
-            if (_isJumping)
-                UpdateJump();
+            if (_jumper.IsJumping)
+                _jumper.UpdateJump();
 
             UpdateAnimations();
+            UpdateCameras();
+        }
+
+        private void UpdateCameras()
+        {
+            foreach(var camaraPair in _cameras.DirectionalCameras)
+                camaraPair.Value.enabled = camaraPair.Key == _directionMover.Direction;
         }
 
         private void UpdateAnimations()
         {
             _animator.PlayAnimation(AnimationType.Idle, true);
-            _animator.PlayAnimation(AnimationType.Walk, _movement.magnitude > 0 );
-            _animator.PlayAnimation(AnimationType.Slide, _currentSpeed==_runSpeed);
-            _animator.PlayAnimation(AnimationType.Jump, _isJumping);
+            _animator.PlayAnimation(AnimationType.Walk, _directionMover.IsMoving);
+            //_animator.PlayAnimation(AnimationType.Slide, _currentSpeed== _directionalMovementData.RunSpeed);
+            _animator.PlayAnimation(AnimationType.Jump, _jumper.IsJumping);
         }
 
-        public void MoveHorizontally(float direction)
-        {
-            _currentSpeed = _walkSpeed;
-            _movement.x = direction;
-            SetDirection(direction);
-            Vector2 velocity = _rigidbody.velocity;
-            velocity.x = direction * _currentSpeed;
-            _rigidbody.velocity = velocity;
-        }
-
-        public void Slide(float direction)
-        {
-            _currentSpeed = _runSpeed;
-            _movement.x = direction;
-            SetDirection(direction);
-            Vector2 velocity = _rigidbody.velocity;
-            velocity.x = direction * _currentSpeed;
-            _rigidbody.velocity = velocity;
-        }
+        public void MoveHorizontally(float direction) => _directionMover.MoveHorizontally(direction);
 
         public void MoveVertically(float direction)
         {
-            if (_isJumping)
+            if (_jumper.IsJumping)
                 return;
 
-            _movement.y = direction;
-            Vector2 velocity = _rigidbody.velocity;
-            velocity.y = direction * _verticalSpeed;
-            _rigidbody.velocity = velocity;
-            if (direction == 0)
-                return;
-
-            float verticalPosition = Mathf.Clamp(transform.position.y, _minVerticalPosition, _maxVerticalPosition);
-            _rigidbody.position = new Vector2(_rigidbody.position.x, verticalPosition);
-            UpdateSize();
+            _directionMover.MoveVertically(direction);
         }
 
-        public void Jump()
-        {
-            if (_isJumping)
-                return;
+        //public void Slide(float direction)
+        // {
+        //     _currentSpeed = _directionalMovementData.RunSpeed;
+        //     _movement.x = direction;
+        //     _directionMover.SetDirection(direction);
+        //     Vector2 velocity = _rigidbody.velocity;
+        //     velocity.x = direction * _currentSpeed;
+        //     _rigidbody.velocity = velocity;
+        // }
 
-            _isJumping = true;
-            _rigidbody.AddForce(Vector2.up * _jumpForce);
-            _rigidbody.gravityScale = _gravityScale;
-            _startJumpVerticalPoint = transform.position.y;
-        }
-
-        private void UpdateSize()
-        {
-            float verticalDelta = _maxVerticalPosition - transform.position.y;
-            float currentSizeModificator = _minSize + _sizeModificator * verticalDelta;
-            transform.localScale = Vector2.one * currentSizeModificator;
-        }
-
-        private void SetDirection(float direction)
-        {
-            if ((_direction == Direction.Right && direction < 0) ||
-                (_direction  == Direction.Left && direction > 0))
-                Flip();
-        }
-
-        private void Flip()
-        {
-            transform.Rotate(0, 180, 0);
-            _direction = _direction == Direction.Right ? Direction.Left : Direction.Right;
-
-            foreach (var cameraPair in _cameras.DirectionalCameras)
-                cameraPair.Value.enabled = cameraPair.Key == _direction;
-        }
-
-        private void UpdateJump()
-        {
-            if (_rigidbody.velocity.y < 0 && _rigidbody.position.y <= _startJumpVerticalPoint)
-            {
-                ResetJump();
-                return;
-            }
-        }
-
-        private void ResetJump()
-        {
-            _isJumping = false; 
-            _rigidbody.position = new Vector2(_rigidbody.position.x, _startJumpVerticalPoint);
-            _rigidbody.gravityScale = 0;
-        }      
+        public void Jump() => _jumper.Jump();   
         
         public void StartAtack()
         {
@@ -175,26 +96,5 @@ namespace Player
             _animator.AnimationEnded -= EndAttack;
             _animator.PlayAnimation(AnimationType.Atack, false);
         }
-
-        //public void StartSlize()
-        //{
-        //    if (!_animator.PlayAnimation(AnimationType.Slide, true))
-        //        return;
-
-        //    _animator.ActionRequested += Slize;
-        //    _animator.AnimationEnded += EndSlize;
-        //}
-
-        //private void Slize()
-        //{
-        //    Debug.Log("Slide");
-        //}
-
-        //private void EndSlize()
-        //{
-        //    _animator.ActionRequested -= Slize;
-        //    _animator.AnimationEnded -= EndSlize;
-        //    _animator.PlayAnimation(AnimationType.Slide, false);
-        //}
     }
 }

@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
+using Core;
 
-namespace Assets.Scripts.Player.PlayerAnimation
+namespace Animation
 {
     [RequireComponent(typeof(Animator))]
     public class UnityAnimatorController : AnimationController
