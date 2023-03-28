@@ -1,4 +1,6 @@
-﻿using Core.Movement.Data;
+﻿using Assets.Scripts.StatsSystem;
+using Assets.Scripts.StatsSystem.Enum;
+using Core.Movement.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,16 +16,18 @@ namespace Core.Movement.Controller
         private readonly Rigidbody2D _rigidbody;
         private readonly float _maxVerticalSize;
         private readonly Transform _transform;
+        private readonly IStatValueGiver _statValueGiver;
 
         private float _startjumpVerticalPos;
 
         public bool IsJumping { get; private set; }
 
-        public Jumper(Rigidbody2D rigidbody2D, JumpData jumpData, float maxVerticalSize)
+        public Jumper(Rigidbody2D rigidbody2D, JumpData jumpData, float maxVerticalSize, IStatValueGiver statValueGiver)
         {
             _rigidbody = rigidbody2D;
             _jumpData = jumpData;
             _maxVerticalSize = maxVerticalSize;
+            _statValueGiver = statValueGiver;
             _transform = _rigidbody.transform;
         }
 
@@ -36,7 +40,7 @@ namespace Core.Movement.Controller
             IsJumping = true;
             _startjumpVerticalPos = _rigidbody.position.y;
             var jumpModificator = _transform.localScale.y / _maxVerticalSize;
-            var currentJumpForce = _jumpData.JumpForse * jumpModificator;
+            var currentJumpForce = _statValueGiver.GetStatValue(StatType.JumpForce) * jumpModificator;
             _rigidbody.gravityScale = _jumpData.GravityScale * jumpModificator;
             _rigidbody.AddForce(Vector2.up * currentJumpForce);
         }

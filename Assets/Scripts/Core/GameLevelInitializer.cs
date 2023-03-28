@@ -1,4 +1,5 @@
 ﻿using Assets.Scripts.Core.Sevrices.Updater;
+using Assets.Scripts.StatsSystem;
 using InputReader;
 using Player;
 using System;
@@ -35,7 +36,7 @@ namespace Core
                 _gameUIInputView,
                 _externalDevicesInput
             });
-
+            _disposables.Add(_playerSystem);
         }
 
         private void Update()

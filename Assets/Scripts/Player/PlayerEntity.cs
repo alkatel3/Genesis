@@ -6,6 +6,7 @@ using System;
 using Animation;
 using Core.Movement.Data;
 using Core.Movement.Controller;
+using Assets.Scripts.StatsSystem;
 
 namespace Player
 {
@@ -21,11 +22,11 @@ namespace Player
         private DirectionMover _directionMover;
         private Jumper _jumper;
 
-        private void Start()
+        public void Initialize(IStatValueGiver statValueGiver)
         {
             _rigidbody = GetComponent<Rigidbody2D>();
-            _directionMover = new DirectionMover(_rigidbody, _directionalMovementData);
-            _jumper = new Jumper(_rigidbody, _jumpData, _directionalMovementData.MaxSize); 
+            _directionMover = new DirectionMover(_rigidbody, _directionalMovementData, statValueGiver);
+            _jumper = new Jumper(_rigidbody, _jumpData, _directionalMovementData.MaxSize, statValueGiver); 
 
             _rigidbody.position = new Vector2(_rigidbody.position.x, _directionalMovementData.MaxVerticalPosition);
             transform.localScale = Vector2.one * _directionalMovementData.MinSize;
@@ -33,11 +34,18 @@ namespace Player
 
         private void Update()
         {
-            if (_jumper.IsJumping)
-                _jumper.UpdateJump();
+            try
+            {
+                if (_jumper.IsJumping)
+                    _jumper.UpdateJump();
 
-            UpdateAnimations();
-            UpdateCameras();
+                UpdateAnimations();
+                UpdateCameras();
+            }
+            catch(Exception ex)
+            {
+                Debug.Log(nameof(ex.InnerException));
+            }
         }
 
         private void UpdateCameras()
