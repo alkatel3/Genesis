@@ -25,8 +25,8 @@ namespace Player
             _playerEntity.MoveHorizontally(GetHorizontalDirection());
             _playerEntity.MoveVertically(GetVerticalDirection());
 
-            //if (IsSlide)
-            //    _playerEntity.Slide(GetHorizontalDirection());
+            if (IsSlide)
+                _playerEntity.Slide(GetHorizontalDirection());
 
             if (IsJump)
                 _playerEntity.Jump();

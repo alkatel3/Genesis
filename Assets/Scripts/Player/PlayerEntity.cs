@@ -58,7 +58,7 @@ namespace Player
         {
             _animator.PlayAnimation(AnimationType.Idle, true);
             _animator.PlayAnimation(AnimationType.Walk, _directionMover.IsMoving);
-            //_animator.PlayAnimation(AnimationType.Slide, _currentSpeed== _directionalMovementData.RunSpeed);
+            _animator.PlayAnimation(AnimationType.Slide, _directionalMovementData.CurrentSpeed == _directionalMovementData.RunSpeed);
             _animator.PlayAnimation(AnimationType.Jump, _jumper.IsJumping);
         }
 
@@ -72,18 +72,11 @@ namespace Player
             _directionMover.MoveVertically(direction);
         }
 
-        //public void Slide(float direction)
-        // {
-        //     _currentSpeed = _directionalMovementData.RunSpeed;
-        //     _movement.x = direction;
-        //     _directionMover.SetDirection(direction);
-        //     Vector2 velocity = _rigidbody.velocity;
-        //     velocity.x = direction * _currentSpeed;
-        //     _rigidbody.velocity = velocity;
-        // }
+        public void Jump() => _jumper.Jump();
 
-        public void Jump() => _jumper.Jump();   
-        
+        public void Slide(float direction) => _directionMover.Slide(direction);
+
+
         public void StartAtack()
         {
             if (!_animator.PlayAnimation(AnimationType.Atack, true))

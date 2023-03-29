@@ -79,5 +79,16 @@ namespace Core.Movement.Controller
             Direction = Direction == Direction.Right ? Direction.Left : Direction.Right;
         }
 
+
+
+        public void Slide(float direction)
+        {
+            _directionalMovementData.CurrentSpeed = _statValueGiver.GetStatValue(StatType.Speed) * 2;
+            _movement.x = direction;
+            SetDirection(direction);
+            Vector2 velocity = _rigidbody.velocity;
+            velocity.x = direction * _directionalMovementData.CurrentSpeed;
+            _rigidbody.velocity = velocity;
+        }
     }
 }

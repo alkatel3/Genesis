@@ -1,5 +1,4 @@
 ﻿using Assets.Scripts.Core.Sevrices.Updater;
-using Assets.Scripts.StatsSystem;
 using InputReader;
 using Player;
 using System;

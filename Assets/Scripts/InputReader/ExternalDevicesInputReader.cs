@@ -35,8 +35,8 @@ namespace InputReader
             if (!IsPointerOverUI() && Input.GetButtonDown("Fire1"))
                 Attack = true;
 
-            //if (!IsPointerOverUI() && Input.GetButton("Horizontal") && Input.GetKey(KeyCode.Mouse1))
-            //    Slide = true;
+            if (!IsPointerOverUI() && Input.GetButton("Horizontal") && Input.GetKey(KeyCode.Mouse1))
+                Slide = true;
         }
 
 
